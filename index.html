@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แม่เหล็กและไฟฟ้า · สื่อจำลองเชิงโต้ตอบ</title>
+<style>
+  :root {
+    --bg: #070b12;
+    --panel: rgba(16, 24, 38, 0.94);
+    --line: rgba(148, 163, 184, 0.18);
+    --text: #e8eef7;
+    --muted: #93a4bd;
+    --cyan: #38bdf8;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --violet: #c4b5fd;
+    --blue: #60a5fa;
+    --green: #34d399;
+    --card: #121a2b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Leelawadee UI", Tahoma, "Segoe UI", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1000px 420px at 12% -10%, rgba(56, 189, 248, 0.14), transparent 55%),
+      radial-gradient(800px 380px at 100% 0%, rgba(251, 113, 133, 0.1), transparent 50%),
+      var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px 0;
+  }
+  .brand { display: flex; gap: 12px; align-items: center; }
+  .logo {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(135deg, #fb7185, #7f1d1d 42%, #1e3a8a 58%, #60a5fa);
+    display: grid; place-items: center;
+    font-weight: 800; letter-spacing: 0.04em; color: white;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+  h1 { font-size: 22px; margin: 0; font-weight: 700; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  #modeTitle { text-align: right; }
+  #modeTitle strong { display: block; font-size: 16px; }
+  #modeTitle span { color: var(--muted); font-size: 12px; }
+  main {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: 318px minmax(0, 1fr) 332px;
+    gap: 12px;
+    padding: 12px;
+  }
+  .panel, .stage {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    min-height: 0;
+  }
+  .panel { padding: 12px 12px 10px; overflow: auto; }
+  .stage { display: flex; flex-direction: column; padding: 10px; gap: 8px; }
+  h2 {
+    margin: 0 0 8px; font-size: 13px; letter-spacing: 0.04em;
+    color: var(--muted); font-weight: 700;
+  }
+  .modes { display: grid; gap: 6px; }
+  .mode-btn, .sub-btn, .transport button {
+    font-family: inherit; color: var(--text); cursor: pointer;
+    border: 1px solid var(--line); background: #0e1626; border-radius: 10px;
+  }
+  .mode-btn {
+    text-align: left; padding: 8px 10px; font-size: 14px;
+  }
+  .mode-btn small { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+  .mode-btn.active {
+    border-color: rgba(56, 189, 248, 0.7);
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.18), #0e1626 70%);
+  }
+  .submodes { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .sub-btn { padding: 6px 8px; font-size: 12px; }
+  .sub-btn.active { background: #16324a; border-color: var(--cyan); color: white; }
+  .lede { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 8px 0 10px; }
+  .ctrl { margin: 8px 0 10px; }
+  .ctrl .top { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+  .ctrl .top b { color: var(--cyan); font-weight: 700; }
+  input[type="range"] { width: 100%; accent-color: #38bdf8; margin-top: 4px; }
+  .checks { display: grid; gap: 6px; margin: 8px 0; }
+  .checks label { font-size: 13px; display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
+  .transport { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .transport button { padding: 9px 4px; font-size: 13px; }
+  .transport button.primary { background: #0c4a6e; border-color: #38bdf8; }
+  #btnCut { width: 100%; margin-top: 4px; padding: 8px; font-family: inherit; font-size: 13px; border-radius: 10px; border: 1px solid var(--line); background: #1f2937; color: var(--text); cursor: pointer; }
+  #btnCut.on { border-color: var(--amber); color: var(--amber); }
+  .hint { color: var(--muted); font-size: 11px; margin: 10px 0 2px; line-height: 1.4; }
+  .canvas-wrap {
+    flex: 1; min-height: 300px; position: relative;
+    border-radius: 12px; overflow: hidden;
+    background: #070b12; border: 1px solid rgba(148, 163, 184, 0.12);
+  }
+  #sim, #graph { width: 100%; height: 100%; display: block; }
+  .readouts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px;
+  }
+  .card.active { border-color: rgba(56, 189, 248, 0.55); }
+  .card .k { color: var(--muted); font-size: 11px; }
+  .card .num { font-size: 16px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .formula {
+    background: #0c1422; border-radius: 12px; padding: 8px 10px; border: 1px solid var(--line);
+  }
+  .formula .eq { font-size: 15px; line-height: 1.45; }
+  .formula .an { color: #d5deea; font-size: 13px; line-height: 1.5; margin-top: 4px; }
+  .graph-wrap { height: 230px; background: #070b12; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; }
+  .block { margin-top: 10px; background: #0c1422; border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
+  .block h3 { margin: 0 0 6px; font-size: 13px; }
+  #vecBox { font-size: 13px; line-height: 1.55; color: #d5deea; font-variant-numeric: tabular-nums; }
+  #misBox { border-color: rgba(251, 191, 36, 0.45); background: rgba(120, 83, 9, 0.16); }
+  #misText { margin: 0; font-size: 13px; line-height: 1.55; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 12px; color: var(--muted); font-size: 12px;
+  }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  @media (max-width: 1180px) {
+    main {
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+    .panel, .stage {
+      overflow: visible;
+      height: auto;
+      flex: 0 0 auto;
+    }
+    .canvas-wrap { height: 440px; flex: 0 0 auto; }
+    header { align-items: flex-start; }
+    #modeTitle { text-align: left; }
+  }
+  @media (max-width: 720px) {
+    .readouts { grid-template-columns: 1fr 1fr; }
+    header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">N S</div>
+    <div>
+      <h1>แม่เหล็กและไฟฟ้า</h1>
+      <p>สื่อจำลองเชิงโต้ตอบ · ฟิสิกส์ระดับมัธยมศึกษาตอนปลาย</p>
+    </div>
+  </div>
+  <div id="modeTitle"><strong>แท่งแม่เหล็กและเส้นแรง</strong><span>โหมด 1 จาก 5</span></div>
+</header>
+<main>
+  <aside class="panel">
+    <h2>โหมดการทดลอง</h2>
+    <div class="modes" id="modeList">
+      <button class="mode-btn active" data-mode="1">1 · แท่งแม่เหล็ก<small>เส้นแรง N → S และเข็มทิศ</small></button>
+      <button class="mode-btn" data-mode="2">2 · สนามจากกระแส<small>สายตรง · ห่วง · โซเลนอยด์</small></button>
+      <button class="mode-btn" data-mode="3">3 · แรงบนประจุ<small>F = qvB sinθ และรัศมีโคจร</small></button>
+      <button class="mode-btn" data-mode="4">4 · แรงบนสายไฟ<small>สายเดี่ยว และสายขนาน</small></button>
+      <button class="mode-btn" data-mode="5">5 · การเหนี่ยวนำ<small>ฟาราเดย์ · เลนซ์ · ไดนาโม</small></button>
+    </div>
+    <div class="submodes" id="subModes" hidden></div>
+    <p class="lede" id="lede"></p>
+    <h2>ตัวแปร</h2>
+    <div class="ctrl" data-key="B">
+      <div class="top"><span id="labB">ความเข้มสนาม B</span><b id="valB">1.0 T</b></div>
+      <input id="inB" type="range" min="0" max="5" step="0.1" value="1">
+    </div>
+    <div class="ctrl" data-key="I">
+      <div class="top"><span id="labI">กระแสไฟฟ้า I</span><b id="valI">2.0 A</b></div>
+      <input id="inI" type="range" min="-10" max="10" step="0.5" value="2">
+    </div>
+    <div class="ctrl" data-key="I2">
+      <div class="top"><span>กระแสสายที่ 2 · I₂</span><b id="valI2">2.0 A</b></div>
+      <input id="inI2" type="range" min="-10" max="10" step="0.5" value="2">
+    </div>
+    <div class="ctrl" data-key="d">
+      <div class="top"><span>ระยะห่างระหว่างสาย d</span><b id="vald">0.15 m</b></div>
+      <input id="ind" type="range" min="0.05" max="0.40" step="0.01" value="0.15">
+    </div>
+    <div class="ctrl" data-key="q">
+      <div class="top"><span>ประจุไฟฟ้า q</span><b id="valq">+1.0 μC</b></div>
+      <input id="inq" type="range" min="-5" max="5" step="0.5" value="1">
+    </div>
+    <div class="ctrl" data-key="v">
+      <div class="top"><span id="labV">ความเร็ว v</span><b id="valv">40 m/s</b></div>
+      <input id="inv" type="range" min="0" max="100" step="5" value="40">
+    </div>
+    <div class="ctrl" data-key="th">
+      <div class="top"><span id="labTh">มุม θ</span><b id="valTh">90°</b></div>
+      <input id="inth" type="range" min="0" max="180" step="5" value="90">
+    </div>
+    <div class="ctrl" data-key="N">
+      <div class="top"><span>จำนวนรอบ N</span><b id="valN">100 รอบ</b></div>
+      <input id="inN" type="range" min="1" max="500" step="1" value="100">
+    </div>
+    <button id="btnCut" type="button" hidden>ตัดแท่งแม่เหล็กเป็นสองท่อน</button>
+    <h2>การแสดงผล</h2>
+    <div class="checks">
+      <label><input type="checkbox" id="togB" checked> แสดงเส้นแรงแม่เหล็ก และเวกเตอร์ B</label>
+      <label><input type="checkbox" id="togF" checked> แสดงเวกเตอร์แรง F และความเร็ว v</label>
+      <label><input type="checkbox" id="togE"> <span id="labE">แสดงทิศทางอิเล็กตรอนแทนกระแสสมมติ</span></label>
+    </div>
+    <div class="transport">
+      <button id="btnPlay" class="primary" type="button">หยุดชั่วคราว</button>
+      <button id="btnReset" type="button">เริ่มใหม่</button>
+      <button id="btnStep" type="button" title="เดินหนึ่งช่วงเวลา">ทีละเฟรม</button>
+    </div>
+    <p class="hint">แป้น 1–5 สลับโหมด · Space เล่นหรือหยุด · R เริ่มใหม่<br>ระบบ SI · ไม่คิดแรงโน้มถ่วง แรงต้านอากาศ และการสูญเสียความร้อน</p>
+  </aside>
+  <section class="stage">
+    <div class="canvas-wrap"><canvas id="sim"></canvas></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#38bdf8"></i>B สนาม</span>
+      <span><i class="sw" style="background:#fbbf24"></i>v ความเร็ว</span>
+      <span><i class="sw" style="background:#c4b5fd"></i>I กระแสสมมติ</span>
+      <span><i class="sw" style="background:#fb7185"></i>F แรง</span>
+      <span><i class="sw" style="background:#fb7185"></i>ขั้ว N</span>
+      <span><i class="sw" style="background:#60a5fa"></i>ขั้ว S</span>
+    </div>
+    <div class="readouts">
+      <div class="card" id="cardF"><div class="k">ขนาดแรงแม่เหล็ก F</div><div class="num" id="outF">—</div></div>
+      <div class="card" id="cardR"><div class="k">รัศมีความโค้ง R</div><div class="num" id="outR">—</div></div>
+      <div class="card" id="cardE"><div class="k">แรงเคลื่อนเหนี่ยวนำ ε</div><div class="num" id="outE">—</div></div>
+      <div class="card" id="cardP"><div class="k">ฟลักซ์แม่เหล็ก Φ_B</div><div class="num" id="outP">—</div></div>
+    </div>
+    <div class="formula">
+      <div class="eq" id="eqText"></div>
+      <div class="an" id="anText"></div>
+    </div>
+  </section>
+  <aside class="panel">
+    <h2>กราฟความสัมพันธ์</h2>
+    <div class="graph-wrap"><canvas id="graph"></canvas></div>
+    <div class="block">
+      <h3>องค์ประกอบเวกเตอร์ (X, Y, Z)</h3>
+      <div id="vecBox"></div>
+    </div>
+    <div class="block" id="misBox">
+      <h3>แก้ความเข้าใจคลาดเคลื่อน</h3>
+      <p id="misText" aria-live="polite"></p>
+    </div>
+  </aside>
+</main>
+<script>
+"use strict";
+const MU0 = 4 * Math.PI * 1e-7;
+const MASS = 2.0e-7;
+const WIRE_L = 0.8;
+const PAIR_L = 1;
+const LOOP_R = 0.1;
+const SOL_L = 0.5;
+const SOL_R = 0.04;
+const COIL_A = 0.01;
+const COIL_A0 = 0.1;
+const GEN_A = 0.04;
+const SLOW = 80;
+
+const state = {
+  mode: 1,
+  sub2: "wire",
+  sub4: "single",
+  sub5: "magnet",
+  B: 1, I: 2, I2: 2, d: 0.15, q: 1, v: 40, thForce: 90, thFlux: 0, N: 100,
+  showB: true, showF: true, electron: false,
+  playing: true, cut: false, t: 0,
+  magnetX: -0.42, magnetDir: 1, angle: 0,
+  p: { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0 },
+  trail: [],
+  hist: [],
+  acc: 0,
+  needles: [],
+  needleKey: "",
+  lines: null,
+  lineKey: ""
+};
+
+const sim = document.getElementById("sim");
+const graph = document.getElementById("graph");
+const $ = (id) => document.getElementById(id);
+
+const MODE_NAME = [
+  "",
+  ["แท่งแม่เหล็กและเส้นแรง", "สนามจากแม่เหล็กถาวร"],
+  ["สนามแม่เหล็กจากกระแสไฟฟ้า", "สายตรง ห่วงวงกลม และโซเลนอยด์"],
+  ["แรงแม่เหล็กบนประจุเคลื่อนที่", "แรงลอเรนตซ์และการเคลื่อนที่แบบวงกลมหรือเกลียว"],
+  ["แรงบนสายไฟที่มีกระแส", "สายเดี่ยวในสนาม และแรงระหว่างสายขนาน"],
+  ["การเหนี่ยวนำแม่เหล็กไฟฟ้า", "กฎของฟาราเดย์ กฎของเลนซ์ และไดนาโม"]
+];
+
+function rad(d) { return d * Math.PI / 180; }
+function thetaDeg() { return state.mode === 5 ? state.thFlux : state.thForce; }
+function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+function sup(exp) {
+  const map = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+  return String(exp).split("").map((c) => map[c] || c).join("");
+}
+function fmt(n) {
+  if (n === null || n === undefined) return "—";
+  if (!isFinite(n)) return "∞";
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.abs(n);
+  if (abs === 0 || abs < 1e-14) return "0";
+  if (abs >= 1e4 || abs < 1e-2) {
+    const exp = Math.floor(Math.log10(abs));
+    const mant = abs / Math.pow(10, exp);
+    return sign + mant.toFixed(2) + "×10" + sup(exp);
+  }
+  if (abs >= 100) return sign + abs.toFixed(1);
+  if (abs >= 10) return sign + abs.toFixed(2);
+  return sign + abs.toFixed(3);
+}
+function fmtUnit(n, unit) {
+  if (!isFinite(n)) return "∞ " + unit;
+  return fmt(n) + " " + unit;
+}
+
+function fit(canvas) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  const W = Math.max(1, Math.floor(w * dpr));
+  const H = Math.max(1, Math.floor(h * dpr));
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.width = W;
+    canvas.height = H;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+
+function arrow(ctx, x0, y0, x1, y1, color, lw) {
+  const dx = x1 - x0, dy = y1 - y0;
+  const len = Math.hypot(dx, dy);
+  if (len < 3) return;
+  const ang = Math.atan2(dy, dx);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = lw || 2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  const h = Math.min(11, len * 0.4);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x1 - h * Math.cos(ang - 0.42), y1 - h * Math.sin(ang - 0.42));
+  ctx.lineTo(x1 - h * Math.cos(ang + 0.42), y1 - h * Math.sin(ang + 0.42));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function dotSym(ctx, x, y, r, color, into) {
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  if (into) {
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.55, y - r * 0.55);
+    ctx.lineTo(x + r * 0.55, y + r * 0.55);
+    ctx.moveTo(x + r * 0.55, y - r * 0.55);
+    ctx.lineTo(x - r * 0.55, y + r * 0.55);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(2, r * 0.28), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function pill(ctx, text, x, y) {
+  ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+  const w = ctx.measureText(text).width + 16;
+  ctx.fillStyle = "rgba(8, 12, 22, 0.82)";
+  ctx.strokeStyle = "rgba(148,163,184,0.35)";
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, 26, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillText(text, x + 8, y + 17);
+}
+
+function qC() { return state.q * 1e-6; }
+
+function initParticle() {
+  const th = rad(thetaDeg());
+  const q = qC();
+  const vPerp = state.v * Math.sin(th);
+  const vPar = state.v * Math.cos(th);
+  const B = state.B;
+  let R = Infinity;
+  if (Math.abs(q) > 0 && B > 0 && Math.abs(vPerp) > 0) R = MASS * Math.abs(vPerp) / (Math.abs(q) * B);
+  const qSign = Math.sign(q) || 1;
+  if (!isFinite(R)) {
+    state.p = { x: 0, y: 0, z: 0, vx: vPerp, vy: 0, vz: vPar };
+  } else {
+    state.p = { x: R, y: 0, z: 0, vx: 0, vy: -qSign * Math.abs(vPerp), vz: vPar };
+  }
+  state.trail = [];
+}
+
+function stepParticle(dt) {
+  const B = state.B;
+  const q = qC();
+  const p = state.p;
+  const omega = (q * B) / MASS;
+  if (Math.abs(omega) < 1e-8 || Math.hypot(p.vx, p.vy) < 1e-10) {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.z += p.vz * dt;
+  } else {
+    const Cx = p.x + p.vy / omega;
+    const Cy = p.y - p.vx / omega;
+    const phi = -omega * dt;
+    const c = Math.cos(phi), s = Math.sin(phi);
+    const rx = p.x - Cx, ry = p.y - Cy;
+    p.x = Cx + rx * c - ry * s;
+    p.y = Cy + rx * s + ry * c;
+    const nvx = p.vx * c - p.vy * s;
+    const nvy = p.vx * s + p.vy * c;
+    p.vx = nvx;
+    p.vy = nvy;
+    p.z += p.vz * dt;
+  }
+  state.trail.push({ x: p.x, y: p.y, z: p.z });
+  if (state.trail.length > 360) state.trail.shift();
+}
+
+function lorentz() {
+  const q = qC();
+  const B = state.B;
+  const p = state.p;
+  const Fx = q * p.vy * B;
+  const Fy = -q * p.vx * B;
+  const Fz = 0;
+  const F = Math.hypot(Fx, Fy, Fz);
+  const vPerp = Math.hypot(p.vx, p.vy);
+  const speed = Math.hypot(p.vx, p.vy, p.vz);
+  let R = Infinity;
+  if (Math.abs(q) > 0 && B > 0 && vPerp > 1e-8) R = MASS * vPerp / (Math.abs(q) * B);
+  const th = rad(thetaDeg());
+  const Fslider = Math.abs(q) * state.v * B * Math.abs(Math.sin(th));
+  return { Fx, Fy, Fz, F, R, speed, vPerp, Fslider, q };
+}
+
+function wireSingle() {
+  const th = rad(thetaDeg());
+  const s = Math.sin(th);
+  const Fz = -state.I * WIRE_L * state.B * s;
+  const F = Math.abs(Fz);
+  return {
+    F, Fz, Fx: 0, Fy: 0,
+    Bx: state.B, By: 0, Bz: 0,
+    Lx: WIRE_L * Math.cos(th), Ly: WIRE_L * Math.sin(th), Lz: 0
+  };
+}
+
+function wirePair() {
+  const I1 = state.I, I2 = state.I2, d = state.d;
+  const mag = MU0 * Math.abs(I1 * I2) * PAIR_L / (2 * Math.PI * d);
+  const attract = I1 * I2 > 0;
+  const Fx = (I1 * I2 === 0) ? 0 : -(Math.sign(I1 * I2) * mag);
+  return { F: mag, Fx, Fy: 0, Fz: 0, attract, perLen: mag / PAIR_L };
+}
+
+function fluxOfMagnet(x) {
+  const a = COIL_A0;
+  const g = Math.pow((a * a) / (a * a + x * x), 1.5);
+  return state.B * COIL_A * Math.cos(rad(thetaDeg())) * g;
+}
+function dFluxDx(x) {
+  const a = COIL_A0;
+  const denom = Math.pow(a * a + x * x, 2.5);
+  return state.B * COIL_A * Math.cos(rad(thetaDeg())) * (-3 * x * a * a * a) / denom;
+}
+function induction() {
+  if (state.sub5 === "dynamo") {
+    const omegaSet = state.v / 10;
+    const omega = state.playing ? omegaSet : 0;
+    const phi = state.B * GEN_A * Math.cos(state.angle);
+    const eps = state.N * state.B * GEN_A * omega * Math.sin(state.angle);
+    return { eps, phi, omega, omegaSet, kind: "dynamo" };
+  }
+  const vEff = state.playing ? state.magnetDir * state.v : 0;
+  const phi = fluxOfMagnet(state.magnetX);
+  const eps = -state.N * vEff * dFluxDx(state.magnetX);
+  return { eps, phi, vEff, kind: "magnet" };
+}
+
+function fieldWire(I) { return (r) => MU0 * I / (2 * Math.PI * r); }
+function fieldLoop() { return state.N * MU0 * state.I / (2 * LOOP_R); }
+function fieldSol() { return MU0 * (state.N / SOL_L) * state.I; }
+
+function step(dt) {
+  state.t += dt;
+  if (state.mode === 3) stepParticle(dt);
+  if (state.mode === 5 && state.sub5 === "magnet") {
+    const visual = state.v / SLOW;
+    state.magnetX += state.magnetDir * visual * dt;
+    if (state.magnetX > 0.42) { state.magnetX = 0.42; state.magnetDir = -1; }
+    if (state.magnetX < -0.42) { state.magnetX = -0.42; state.magnetDir = 1; }
+  }
+  if (state.mode === 5 && state.sub5 === "dynamo") {
+    state.angle += (state.v / 10) * dt;
+  }
+  if (state.mode === 5) {
+    state.acc += dt;
+    if (state.acc > 0.04) {
+      state.acc = 0;
+      const ind = induction();
+      state.hist.push(ind.eps);
+      if (state.hist.length > 180) state.hist.shift();
+    }
+  }
+}
+
+function resetMotion() {
+  state.t = 0;
+  state.magnetX = -0.42;
+  state.magnetDir = 1;
+  state.angle = 0;
+  state.hist = [];
+  state.acc = 0;
+  initParticle();
+}
+
+function visibleKeys() {
+  const m = state.mode;
+  return {
+    B: m === 1 || m === 3 || (m === 4 && state.sub4 === "single") || m === 5,
+    I: m === 2 || m === 4,
+    I2: m === 4 && state.sub4 === "parallel",
+    d: m === 4 && state.sub4 === "parallel",
+    q: m === 3,
+    v: m === 3 || m === 5,
+    th: m === 3 || (m === 4 && state.sub4 === "single") || (m === 5 && state.sub5 === "magnet"),
+    N: (m === 2 && state.sub2 !== "wire") || m === 5
+  };
+}
+
+function syncControls() {
+  const vis = visibleKeys();
+  document.querySelectorAll(".ctrl").forEach((el) => {
+    el.hidden = !vis[el.dataset.key];
+  });
+  $("btnCut").hidden = state.mode !== 1;
+  $("btnCut").classList.toggle("on", state.cut);
+  $("btnCut").textContent = state.cut ? "ประกอบแท่งแม่เหล็กกลับเป็นท่อนเดียว" : "ตัดแท่งแม่เหล็กเป็นสองท่อน";
+  $("labB").textContent = state.mode === 1 ? "ความเข้มอ้างอิงใกล้ขั้ว B₀" : "ความเข้มสนามแม่เหล็ก B";
+  $("labV").textContent = state.mode === 5
+    ? (state.sub5 === "dynamo" ? "สเกลความเร็วการหมุน" : "ความเร็วแท่งแม่เหล็ก v")
+    : "ความเร็วประจุ v";
+  $("labTh").textContent = state.mode === 5
+    ? "มุมระหว่าง B กับเส้นตั้งฉากพื้นที่ θ"
+    : (state.mode === 4 ? "มุมระหว่างทิศกระแสกับ B · θ" : "มุมระหว่าง v กับ B · θ");
+  $("valB").textContent = state.B.toFixed(1) + " T";
+  $("valI").textContent = (state.I > 0 ? "+" : "") + state.I.toFixed(1) + " A";
+  $("valI2").textContent = (state.I2 > 0 ? "+" : "") + state.I2.toFixed(1) + " A";
+  $("vald").textContent = state.d.toFixed(2) + " m";
+  $("valq").textContent = (state.q > 0 ? "+" : "") + state.q.toFixed(1) + " μC";
+  $("valv").textContent = state.mode === 5 && state.sub5 === "dynamo"
+    ? state.v.toFixed(0) + " → ω " + fmt(state.v / 10) + " rad/s"
+    : state.v.toFixed(0) + " m/s";
+  $("inth").value = thetaDeg();
+  $("valTh").textContent = thetaDeg().toFixed(0) + "°";
+  $("valN").textContent = state.N.toFixed(0) + " รอบ";
+  $("labE").textContent = state.electron
+    ? "กำลังแสดงทิศอิเล็กตรอน (สวนทางกระแสสมมติ)"
+    : "กำลังแสดงกระแสสมมติ จากบวกไปลบ";
+  const subs = {
+    2: [["wire", "สายไฟตรง"], ["loop", "ห่วงวงกลม"], ["solenoid", "โซเลนอยด์"]],
+    4: [["single", "สายเดี่ยวในสนาม"], ["parallel", "สายขนานสองเส้น"]],
+    5: [["magnet", "แท่งแม่เหล็กผ่านขด"], ["dynamo", "ไดนาโม"]]
+  };
+  const host = $("subModes");
+  host.innerHTML = "";
+  if (!subs[state.mode]) { host.hidden = true; }
+  else {
+    host.hidden = false;
+    const key = state.mode === 2 ? "sub2" : state.mode === 4 ? "sub4" : "sub5";
+    subs[state.mode].forEach(([id, label]) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "sub-btn" + (state[key] === id ? " active" : "");
+      b.textContent = label;
+      b.addEventListener("click", () => {
+        state[key] = id;
+        state.hist = [];
+        syncControls();
+      });
+      host.appendChild(b);
+    });
+  }
+  const info = MODE_NAME[state.mode];
+  $("modeTitle").innerHTML = "<strong>" + info[0] + "</strong><span>โหมด " + state.mode + " จาก 5 · " + info[1] + "</span>";
+  const lede = {
+    1: "เส้นแรงออกจากขั้ว N ไปเข้าขั้ว S นอกแท่ง และชี้จาก S ไป N ภายในแท่ง เข็มทิศเรียงตามสนาม",
+    2: "กระแสสมมติไหลจากขั้วบวกไปขั้วลบ แล้วสร้างสนามแม่เหล็กรอบตัวนำตามกฎมือขวา",
+    3: "แรงแม่เหล็กตั้งฉากทั้งกับความเร็วและกับสนาม จึงเปลี่ยนทิศทางอย่างเดียว อัตราเร็วไม่เพิ่ม",
+    4: "สายที่มีกระแสจะได้รับแรงเมื่อกระแสไม่ขนานกับสนาม สายขนานดึงดูดกันถ้ากระแสทิศเดียวกัน",
+    5: "หลอดไฟสว่างเฉพาะตอนฟลักซ์แม่เหล็กกำลังเปลี่ยน ถ้าแม่เหล็กหยุดหรือขดลวดหยุด ไฟจะดับ"
+  };
+  $("lede").textContent = lede[state.mode];
+  $("btnPlay").textContent = state.playing ? "หยุดชั่วคราว" : "เล่นต่อ";
+}
+
+function setMode(m) {
+  state.mode = m;
+  state.hist = [];
+  if (m === 3) initParticle();
+  document.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("active", Number(b.dataset.mode) === m));
+  syncControls();
+}
+
+function layoutMagnet(w, h) {
+  const cy = h * 0.56;
+  const thick = 46;
+  if (!state.cut) {
+    const len = Math.min(230, w * 0.34);
+    const x0 = w / 2 - len / 2;
+    return {
+      bodies: [{ x: x0, y: cy - thick / 2, w: len, h: thick }],
+      poles: [
+        { x: x0 + 18, y: cy, pol: 1 },
+        { x: x0 + len - 18, y: cy, pol: -1 }
+      ]
+    };
+  }
+  const len = Math.min(150, w * 0.22);
+  const gap = 48;
+  const x0 = w / 2 - len - gap / 2;
+  const x1 = w / 2 + gap / 2;
+  return {
+    bodies: [
+      { x: x0, y: cy - thick / 2, w: len, h: thick },
+      { x: x1, y: cy - thick / 2, w: len, h: thick }
+    ],
+    poles: [
+      { x: x0 + 16, y: cy, pol: 1 },
+      { x: x0 + len - 16, y: cy, pol: -1 },
+      { x: x1 + 16, y: cy, pol: 1 },
+      { x: x1 + len - 16, y: cy, pol: -1 }
+    ]
+  };
+}
+
+function fieldAt(x, y, poles) {
+  let bx = 0, by = 0;
+  for (const p of poles) {
+    const dx = x - p.x, dy = y - p.y;
+    const r2 = dx * dx + dy * dy;
+    const r = Math.sqrt(r2);
+    if (r < 12) continue;
+    const inv = p.pol / (r2 * r);
+    bx += dx * inv;
+    by += dy * inv;
+  }
+  return { bx, by };
+}
+
+function buildLines(w, h, poles) {
+  const lines = [];
+  const norths = poles.filter((p) => p.pol > 0);
+  const nLines = clamp(6 + Math.round(state.B * 2), 6, 16);
+  norths.forEach((n) => {
+    for (let i = 0; i < nLines; i++) {
+      const a = (-Math.PI / 2) + (i + 0.5) * (Math.PI / nLines);
+      let x = n.x + Math.cos(a) * 22;
+      let y = n.y + Math.sin(a) * 22;
+      const pts = [[x, y]];
+      let done = false;
+      for (let k = 0; k < 420 && !done; k++) {
+        const f = fieldAt(x, y, poles);
+        const m = Math.hypot(f.bx, f.by);
+        if (m < 1e-10) break;
+        x += f.bx / m * 3.1;
+        y += f.by / m * 3.1;
+        pts.push([x, y]);
+        if (x < 8 || y < 8 || x > w - 8 || y > h - 8) break;
+        for (const s of poles) {
+          if (s.pol < 0 && Math.hypot(x - s.x, y - s.y) < 16) {
+            pts.push([s.x, s.y]);
+            done = true;
+            break;
+          }
+        }
+      }
+      if (pts.length > 8) lines.push(pts);
+    }
+  });
+  return lines;
+}
+
+function drawMagnetBody(ctx, body) {
+  const g = ctx.createLinearGradient(body.x, 0, body.x + body.w, 0);
+  g.addColorStop(0, "#b91c1c");
+  g.addColorStop(0.45, "#fb7185");
+  g.addColorStop(0.55, "#60a5fa");
+  g.addColorStop(1, "#1d4ed8");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.roundRect(body.x, body.y, body.w, body.h, 8);
+  ctx.fill();
+  ctx.fillStyle = "white";
+  ctx.font = "700 16px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("N", body.x + 10, body.y + 29);
+  ctx.fillText("S", body.x + body.w - 24, body.y + 29);
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
+  ctx.setLineDash([3, 3]);
+  ctx.lineWidth = 1.2;
+  const y1 = body.y + 14, y2 = body.y + body.h - 14;
+  ctx.beginPath();
+  ctx.moveTo(body.x + body.w - 28, y1);
+  ctx.lineTo(body.x + 28, y1);
+  ctx.moveTo(body.x + body.w - 28, y2);
+  ctx.lineTo(body.x + 28, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  arrow(ctx, body.x + body.w * 0.62, body.y + body.h / 2, body.x + body.w * 0.38, body.y + body.h / 2, "rgba(255,255,255,0.9)", 1.4);
+}
+
+function drawMode1(ctx, w, h) {
+  const lay = layoutMagnet(w, h);
+  const key = w + "x" + h + ":" + (state.cut ? 1 : 0) + ":" + Math.round(state.B * 2);
+  if (state.lineKey !== key) {
+    state.lines = buildLines(w, h, lay.poles);
+    state.lineKey = key;
+  }
+  if (state.showB) {
+    ctx.lineWidth = 1.3;
+    ctx.strokeStyle = "rgba(56,189,248,0.75)";
+    state.lines.forEach((pts) => {
+      ctx.beginPath();
+      pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+      ctx.stroke();
+    });
+    const flow = state.t * 28;
+    ctx.fillStyle = "#e0f2fe";
+    state.lines.forEach((pts, li) => {
+      const u = ((flow + li * 17) % (pts.length - 1));
+      const i = Math.floor(u);
+      const f = u - i;
+      const x = pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f;
+      const y = pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  lay.bodies.forEach((b) => drawMagnetBody(ctx, b));
+  if (state.showB) {
+    const nKey = w + "x" + h + ":" + (state.cut ? 1 : 0);
+    if (state.needleKey !== nKey) {
+      state.needles = [];
+      for (let y = 58; y < h - 40; y += 52) {
+        for (let x = 32; x < w - 20; x += 58) {
+          const inside = lay.bodies.some((b) => x > b.x - 6 && x < b.x + b.w + 6 && y > b.y - 6 && y < b.y + b.h + 6);
+          if (!inside) state.needles.push({ x, y, ang: 0 });
+        }
+      }
+      state.needleKey = nKey;
+    }
+    state.needles.forEach((n) => {
+      const f = fieldAt(n.x, n.y, lay.poles);
+      const target = Math.atan2(f.by, f.bx);
+      let d = target - n.ang;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      n.ang += d * 0.12;
+      const L = 13;
+      ctx.strokeStyle = "rgba(226,232,240,0.35)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 16, 0, Math.PI * 2);
+      ctx.stroke();
+      arrow(ctx, n.x - Math.cos(n.ang) * 4, n.y - Math.sin(n.ang) * 4, n.x + Math.cos(n.ang) * L, n.y + Math.sin(n.ang) * L, "#f8fafc", 1.5);
+      ctx.fillStyle = "#fb7185";
+      ctx.beginPath();
+      ctx.arc(n.x + Math.cos(n.ang) * L, n.y + Math.sin(n.ang) * L, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  ctx.fillStyle = "rgba(7,11,18,0.78)";
+  ctx.fillRect(0, 0, w, 40);
+  ctx.fillRect(0, h - 34, w, 34);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("เส้นประภายในแท่งคือสนามจาก S ไป N", 16, 26);
+  ctx.fillText("B₀ = " + state.B.toFixed(1) + " T  (ความเข้มอ้างอิงใกล้ขั้ว ใช้เทียบความหนาแน่นเส้นแรง)", 16, h - 16);
+  if (state.cut) pill(ctx, "แต่ละท่อนยังมีทั้งขั้ว N และขั้ว S", 16, 40);
+}
+
+function drawMode2(ctx, w, h) {
+  const cx = w / 2, cy = h / 2 + 8;
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+  if (state.sub2 === "wire") {
+    const Rpx = Math.min(w * 0.32, h * 0.36);
+    const rMax = 0.16;
+    const scale = Rpx / rMax;
+    const cx = w * 0.62;
+    const cy = h * 0.56;
+    const rings = [0.04, 0.08, 0.12, 0.16];
+    if (state.showB) {
+      rings.forEach((r) => {
+        ctx.strokeStyle = "rgba(56,189,248,0.65)";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+        ctx.stroke();
+        const sense = state.I >= 0 ? 1 : -1;
+        const ang = -sense * state.t * 0.9;
+        const px = cx + Math.cos(ang) * r * scale;
+        const py = cy + Math.sin(ang) * r * scale;
+        const tx = Math.sin(ang) * sense;
+        const ty = -Math.cos(ang) * sense;
+        arrow(ctx, px, py, px + tx * 16, py + ty * 16, "#38bdf8", 1.6);
+        const B = fieldWire(state.I)(r);
+        ctx.fillStyle = "#bae6fd";
+        ctx.fillText("r = " + Math.round(r * 100) + " cm    B = " + fmt(B) + " T", 16, 54 + rings.indexOf(r) * 20);
+      });
+    }
+    dotSym(ctx, cx, cy, 18, "#c4b5fd", state.electron ? state.I > 0 : state.I < 0);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "700 14px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText(state.electron ? "e⁻" : (state.I >= 0 ? "I ⊙" : "I ⊗"), cx - 16, cy + 36);
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("มองตามแนวสาย กระแส" + (state.I >= 0 ? "ออกจากหน้าจอ" : "เข้าหน้าจอ") + " สนามวน" + (state.I >= 0 ? "ทวนเข็ม" : "ตามเข็ม"), 16, 28);
+    ctx.fillText("B = μ₀ I / (2πr)    μ₀ = 4π×10⁻⁷ T·m/A", 16, h - 18);
+    if (state.electron) pill(ctx, "อิเล็กตรอนเคลื่อนสวนทาง สนามยังอิงกระแสสมมติ", 16, 42);
+  } else if (state.sub2 === "loop") {
+    const radPx = Math.min(w, h) * 0.28;
+    ctx.strokeStyle = "#c4b5fd";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radPx, 0, Math.PI * 2);
+    ctx.stroke();
+    const dir = (state.electron ? -1 : 1) * Math.sign(state.I || 1);
+    for (let k = 0; k < 4; k++) {
+      const a = -dir * state.t * 1.2 + k * Math.PI / 2;
+      const x = cx + Math.cos(a) * radPx;
+      const y = cy + Math.sin(a) * radPx;
+      arrow(ctx, x, y, x + Math.sin(a) * dir * 18, y - Math.cos(a) * dir * 18, "#c4b5fd", 2);
+    }
+    if (state.showB) {
+      const out = state.I >= 0;
+      dotSym(ctx, cx, cy, 16, "#38bdf8", !out);
+      ctx.fillStyle = "#bae6fd";
+      ctx.fillText(out ? "B ออกจากหน้าจอ ที่จุดศูนย์กลาง" : "B เข้าหน้าจอ ที่จุดศูนย์กลาง", cx + 22, cy + 4);
+    }
+    const B = fieldLoop();
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("B ที่ศูนย์กลาง = N μ₀ I / (2R) = " + fmt(B) + " T", 16, 28);
+    ctx.fillText("R = " + LOOP_R.toFixed(2) + " m · N = " + state.N + " · กระแส" + (state.I >= 0 ? "ทวนเข็มนาฬิกา" : "ตามเข็มนาฬิกา"), 16, h - 18);
+  } else {
+    const nDraw = clamp(state.N <= 16 ? state.N : 14, 1, 14);
+    const span = Math.min(w * 0.62, 460);
+    const x0 = cx - span / 2;
+    const ry = Math.min(78, h * 0.22);
+    const gap = span / nDraw;
+    for (let i = 0; i < nDraw; i++) {
+      const x = x0 + gap * (i + 0.5);
+      ctx.strokeStyle = "#c4b5fd";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(x, cy, 7, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      const intoTop = state.I >= 0;
+      dotSym(ctx, x, cy - ry, 6, "#c4b5fd", state.electron ? !intoTop : intoTop);
+      dotSym(ctx, x, cy + ry, 6, "#c4b5fd", state.electron ? intoTop : !intoTop);
+    }
+    if (state.showB && Math.abs(state.I) > 0) {
+      const dir = Math.sign(state.I);
+      for (let i = 0; i < 5; i++) {
+        const x = x0 + 30 + i * ((span - 60) / 4);
+        arrow(ctx, x - dir * 16, cy, x + dir * 16, cy, "#38bdf8", 2);
+      }
+    }
+    const B = fieldSol();
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("ภายในโซเลนอยด์อุดมคติ B = μ₀ n I โดย n = N/L", 16, 28);
+    ctx.fillText("L = " + SOL_L.toFixed(2) + " m · n = " + fmt(state.N / SOL_L) + " รอบ/m · B = " + fmt(B) + " T", 16, 48);
+    ctx.fillText(state.I >= 0 ? "กระแสด้านบนเข้าหน้าจอ นิ้วโป้งชี้ไปทางขวา" : "กระแสกลับทาง สนามภายในชี้ไปทางซ้าย", 16, h - 18);
+  }
+  if (state.electron && state.sub2 !== "wire") pill(ctx, "อิเล็กตรอนสวนทางกระแสสมมติ · กฎมือขวาใช้กระแสสมมติ", 16, 64);
+}
+
+function project(x, y, z, cx, cy, scale, camZ) {
+  const Z = z - camZ;
+  const sx = cx + (x - y) * Math.cos(Math.PI / 6) * scale;
+  const sy = cy - Z * scale + (x + y) * Math.sin(Math.PI / 6) * scale * 0.72;
+  return { sx, sy };
+}
+
+function drawMode3(ctx, w, h) {
+  const Lz = lorentz();
+  const q = qC();
+  const B = state.B;
+  const omega = (q * B) / MASS;
+  let Cx = 0, Cy = 0;
+  if (Math.abs(omega) > 1e-8) {
+    Cx = state.p.x + state.p.vy / omega;
+    Cy = state.p.y - state.p.vx / omega;
+  }
+  const R = Lz.R;
+  const viewR = isFinite(R) ? R : Math.max(1, state.v * 0.15);
+  const span = Math.max(viewR * 2.6, 1.2);
+  const scale = Math.min(w, h) * 0.72 / span;
+  const cx = w * 0.52, cy = h * 0.58;
+  const camZ = state.p.z;
+  const orbit = isFinite(R) && R > 0 && Math.abs(omega) > 1e-8;
+  const camX = orbit ? Cx : state.p.x;
+  const camY = orbit ? Cy : state.p.y;
+  const P = (x, y, z) => project(x - camX, y - camY, z, cx, cy, scale, camZ);
+  if (state.showB) {
+    for (let i = -1; i <= 1; i++) {
+      const a = P(camX + i * viewR * 0.8, camY, camZ + viewR);
+      const b = P(camX + i * viewR * 0.8, camY, camZ - viewR * 0.2);
+      arrow(ctx, b.sx, b.sy, a.sx, a.sy, "rgba(56,189,248,0.85)", 2);
+    }
+    ctx.fillStyle = "#7dd3fc";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    const lab = P(camX + viewR * 0.8, camY, camZ + viewR);
+    ctx.fillText("B", lab.sx + 6, lab.sy);
+  }
+  if (orbit) {
+    ctx.strokeStyle = "rgba(148,163,184,0.45)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    const seg = 80;
+    for (let i = 0; i <= seg; i++) {
+      const a = i / seg * Math.PI * 2;
+      const pt = P(Cx + Math.cos(a) * R, Cy + Math.sin(a) * R, camZ);
+      if (i === 0) ctx.moveTo(pt.sx, pt.sy); else ctx.lineTo(pt.sx, pt.sy);
+    }
+    ctx.stroke();
+    const pitch = state.p.vz * (2 * Math.PI / Math.abs(omega));
+    if (Math.abs(pitch) > viewR * 0.05) {
+      ctx.strokeStyle = "rgba(251,191,36,0.35)";
+      ctx.beginPath();
+      const turns = 1.6;
+      const n = 140;
+      const pAng = Math.atan2(state.p.y - Cy, state.p.x - Cx);
+      for (let i = 0; i <= n; i++) {
+        const a = pAng + (i / n - 0.5) * turns * 2 * Math.PI;
+        const z = state.p.z + ((a - pAng) / (2 * Math.PI)) * pitch;
+        const pt = P(Cx + Math.cos(a) * R, Cy + Math.sin(a) * R, z);
+        if (i === 0) ctx.moveTo(pt.sx, pt.sy); else ctx.lineTo(pt.sx, pt.sy);
+      }
+      ctx.stroke();
+    }
+    if (state.showF) {
+      const c0 = P(Cx, Cy, camZ);
+      const pr = P(state.p.x, state.p.y, state.p.z);
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = "rgba(251,113,133,0.7)";
+      ctx.beginPath();
+      ctx.moveTo(c0.sx, c0.sy);
+      ctx.lineTo(pr.sx, pr.sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#fecdd3";
+      ctx.fillText("R = " + fmt(R) + " m", (c0.sx + pr.sx) / 2 + 6, (c0.sy + pr.sy) / 2);
+    }
+  }
+  if (state.trail.length > 1) {
+    for (let i = 1; i < state.trail.length; i++) {
+      const a = state.trail[i - 1], b = state.trail[i];
+      const pa = P(a.x, a.y, a.z);
+      const pb = P(b.x, b.y, b.z);
+      ctx.strokeStyle = "rgba(251,191,36," + (0.15 + 0.85 * i / state.trail.length) + ")";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(pa.sx, pa.sy);
+      ctx.lineTo(pb.sx, pb.sy);
+      ctx.stroke();
+    }
+  }
+  const pp = P(state.p.x, state.p.y, state.p.z);
+  const col = state.q > 0 ? "#fb7185" : state.q < 0 ? "#60a5fa" : "#e2e8f0";
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.arc(pp.sx, pp.sy, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "700 12px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText(state.q > 0 ? "+" : state.q < 0 ? "−" : "0", pp.sx - 4, pp.sy + 4);
+  if (state.showF) {
+    const vlen = Math.hypot(state.p.vx, state.p.vy, state.p.vz) || 1;
+    const vs = 70 / vlen;
+    const pv = P(state.p.x + state.p.vx * vs / scale, state.p.y + state.p.vy * vs / scale, state.p.z + state.p.vz * vs / scale);
+    arrow(ctx, pp.sx, pp.sy, pv.sx, pv.sy, "#fbbf24", 2.4);
+    ctx.fillStyle = "#fde68a";
+    ctx.fillText("v", pv.sx + 4, pv.sy);
+    const Fl = Math.hypot(Lz.Fx, Lz.Fy) || 1;
+    if (Lz.F > 1e-12) {
+      const fs = 64 / Fl;
+      const pf = P(state.p.x + Lz.Fx * fs / scale, state.p.y + Lz.Fy * fs / scale, state.p.z);
+      arrow(ctx, pp.sx, pp.sy, pf.sx, pf.sy, "#fb7185", 2.4);
+      ctx.fillStyle = "#fecdd3";
+      ctx.fillText("F", pf.sx + 4, pf.sy);
+    }
+  }
+  let path = "เส้นตรง";
+  const th = rad(thetaDeg());
+  if (state.v > 0 && state.B > 0 && Math.abs(state.q) > 0) {
+    if (Math.abs(Math.sin(th)) < 1e-3) path = "เส้นตรงขนานกับ B";
+    else if (Math.abs(Math.cos(th)) < 1e-3) path = "วงกลมในระนาบตั้งฉากกับ B";
+    else path = "เกลียวรอบแนวสนาม";
+  }
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText("m = 2.00×10⁻⁷ kg", 16, 24);
+  ctx.fillText("แกนดิ่งคือ B · เส้นทาง: " + path, 16, 44);
+  ctx.fillText("|v| ที่วัดได้ = " + fmt(Lz.speed) + " m/s  (พลังงานจลน์คงที่)", 16, h - 16);
+}
+
+function drawMode4(ctx, w, h) {
+  const cx = w / 2, cy = h * 0.55;
+  if (state.sub4 === "single") {
+    const th = rad(thetaDeg());
+    const scale = Math.min(w, h) * 0.42;
+    function iso(x, y, z) {
+      return { sx: cx + (x + z * 0.42) * scale, sy: cy - (y + z * 0.42) * scale };
+    }
+    if (state.showB) {
+      for (let iy = -1; iy <= 1; iy++) {
+        for (let iz = -1; iz <= 0; iz++) {
+          const a = iso(-0.55, iy * 0.28, iz * 0.28);
+          const b = iso(-0.22, iy * 0.28, iz * 0.28);
+          arrow(ctx, a.sx, a.sy, b.sx, b.sy, "rgba(56,189,248,0.8)", 1.7);
+        }
+      }
+      ctx.fillStyle = "#7dd3fc";
+      ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+      ctx.fillText("B", cx - scale * 0.62, cy + 8);
+    }
+    const wf = wireSingle();
+    const dirI = (state.electron ? -1 : 1) * Math.sign(state.I || 1);
+    const x1 = -0.4 * Math.cos(th), y1 = -0.4 * Math.sin(th);
+    const x2 = 0.4 * Math.cos(th), y2 = 0.4 * Math.sin(th);
+    const a = iso(x1, y1, 0), b = iso(x2, y2, 0);
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(a.sx, a.sy);
+    ctx.lineTo(b.sx, b.sy);
+    ctx.stroke();
+    const mx = (a.sx + b.sx) / 2, my = (a.sy + b.sy) / 2;
+    arrow(ctx, mx, my, mx + (b.sx - a.sx) * 0.25 * dirI, my + (b.sy - a.sy) * 0.25 * dirI, "#c4b5fd", 2);
+    ctx.strokeStyle = "rgba(251,191,36,0.9)";
+    ctx.lineWidth = 1.4;
+    const origin = iso(0, 0, 0);
+    ctx.beginPath();
+    ctx.arc(origin.sx, origin.sy, 36, 0, -th, true);
+    ctx.stroke();
+    ctx.fillStyle = "#fde68a";
+    ctx.fillText("θ", cx + 40, cy - 8);
+    if (state.showF && wf.F > 1e-8) {
+      const s = Math.sign(wf.Fz) || 1;
+      const f0 = iso(0, 0, 0);
+      const f1 = iso(0, 0, s * 0.45);
+      arrow(ctx, f0.sx, f0.sy, f1.sx, f1.sy, "#fb7185", 2.6);
+      ctx.fillStyle = "#fecdd3";
+      ctx.fillText("F", f1.sx + 6, f1.sy);
+    }
+    const msg = wf.F < 1e-8 ? "แรงเป็นศูนย์ เพราะ sinθ = 0 หรือ I = 0 หรือ B = 0" : (wf.Fz < 0 ? "แรงพุ่งเข้าหน้าจอ  ⊗" : "แรงพุ่งออกจากหน้าจอ  ⊙");
+    pill(ctx, msg, 16, 16);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("L = 0.80 m วางในระนาบจอ · B ชี้ไปทางขวา · F ตั้งฉากกับทั้ง L และ B", 16, h - 16);
+  } else {
+    const left = cx - Math.min(120, w * 0.16);
+    const right = cx + Math.min(120, w * 0.16);
+    const top = h * 0.22, bot = h * 0.78;
+    function wire(x, I, label) {
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bot);
+      ctx.stroke();
+      const dir = (state.electron ? -1 : 1) * Math.sign(I || 1);
+      const travel = ((state.t * 70 * dir) % 36 + 36) % 36;
+      ctx.fillStyle = state.electron ? "#fb7185" : "#c4b5fd";
+      for (let y = top + travel; y < bot; y += 36) {
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+      ctx.fillText(label + " = " + I.toFixed(1) + " A", x - 36, top - 10);
+    }
+    wire(left, state.I, "I₁");
+    wire(right, state.I2, "I₂");
+    if (state.showB && Math.abs(state.I) > 0) {
+      ctx.strokeStyle = "rgba(56,189,248,0.45)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(left, (top + bot) / 2, right - left, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    const pair = wirePair();
+    if (state.showF && pair.F > 0) {
+      const mid = (top + bot) / 2;
+      const inward = pair.attract ? 1 : -1;
+      arrow(ctx, left, mid - 20, left + inward * 54, mid - 20, "#fb7185", 2.4);
+      arrow(ctx, right, mid + 16, right - inward * 54, mid + 16, "#fb7185", 2.4);
+    }
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("d = " + state.d.toFixed(2) + " m · L = 1.00 m ที่ใช้คำนวณแรง", 16, h - 16);
+    const word = state.I * state.I2 === 0 ? "ไม่มีแรง เพราะมีสายที่กระแสเป็นศูนย์" : (pair.attract ? "กระแสทิศเดียวกัน · ดึงดูดกัน" : "กระแสสวนทางกัน · ผลักกัน");
+    pill(ctx, word, 16, 16);
+  }
+}
+
+function lamp(ctx, x, y, bright) {
+  const g = ctx.createRadialGradient(x, y, 4, x, y, 48 + bright * 36);
+  g.addColorStop(0, "rgba(254,240,138," + (0.2 + bright * 0.8) + ")");
+  g.addColorStop(1, "rgba(254,240,138,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, 52 + bright * 28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = bright > 0.08 ? "#fef3c7" : "#334155";
+  ctx.strokeStyle = "#e2e8f0";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y, 22, Math.PI, 0);
+  ctx.lineTo(x + 14, y + 20);
+  ctx.lineTo(x - 14, y + 20);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = bright > 0.2 ? "#f59e0b" : "#64748b";
+  ctx.beginPath();
+  ctx.moveTo(x - 6, y - 2);
+  ctx.lineTo(x - 2, y + 6);
+  ctx.lineTo(x + 3, y);
+  ctx.lineTo(x + 6, y + 8);
+  ctx.stroke();
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillRect(x - 12, y + 20, 24, 8);
+}
+
+function drawMode5(ctx, w, h) {
+  const ind = induction();
+  const cx = w * 0.42, cy = h * 0.5;
+  if (state.sub5 === "magnet") {
+    const scale = Math.min(w, h) * 0.9;
+    const sx = (x) => cx + x * scale;
+    ctx.strokeStyle = "rgba(148,163,184,0.4)";
+    ctx.beginPath();
+    ctx.moveTo(sx(-0.5), cy);
+    ctx.lineTo(sx(0.5), cy);
+    ctx.stroke();
+    ctx.strokeStyle = "#c4b5fd";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(sx(0), cy, 16, 70, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let k = -2; k <= 2; k++) {
+      ctx.beginPath();
+      ctx.ellipse(sx(k * 0.035), cy, 10, 70, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    const mx = sx(state.magnetX);
+    ctx.save();
+    ctx.translate(mx, cy);
+    ctx.rotate(-rad(thetaDeg()));
+    const g = ctx.createLinearGradient(-58, 0, 58, 0);
+    g.addColorStop(0, "#1d4ed8");
+    g.addColorStop(0.48, "#60a5fa");
+    g.addColorStop(0.52, "#fb7185");
+    g.addColorStop(1, "#b91c1c");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect(-58, -18, 116, 36, 7);
+    ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.font = "700 14px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("S", -50, 5);
+    ctx.fillText("N", 36, 5);
+    ctx.restore();
+    const bright = lampBright(ind.eps);
+    const lampX = Math.min(w * 0.84, w - 70);
+    lamp(ctx, lampX, cy - 10, bright);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sx(0.08), cy - 70);
+    ctx.lineTo(lampX, cy - 78);
+    ctx.lineTo(lampX, cy - 36);
+    ctx.moveTo(sx(0.08), cy + 70);
+    ctx.lineTo(lampX, cy + 78);
+    ctx.lineTo(lampX, cy + 28);
+    ctx.stroke();
+    if (state.showB && Math.abs(ind.eps) > 1e-6) {
+      const dir = Math.sign(ind.eps);
+      arrow(ctx, sx(0) - dir * 28, cy - 96, sx(0) + dir * 46, cy - 96, "#38bdf8", 2);
+      ctx.fillStyle = "#bae6fd";
+      ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+      ctx.fillText("B เหนี่ยวนำต้านการเปลี่ยนฟลักซ์", sx(0) - 78, cy - 108);
+    }
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("ภาพช้าลง " + SLOW + " เท่า เพื่อให้มองทัน · ค่า ε คิดจากความเร็วจริง", 16, 26);
+    ctx.fillText("A = 0.010 m² · แบบจำลอง Φ = BA cosθ [a²/(a²+x²)]^(3/2)", 16, h - 16);
+  } else {
+    const nX = w * 0.22, sX = w * 0.62, cy2 = h * 0.48;
+    ctx.fillStyle = "#b91c1c";
+    ctx.beginPath(); ctx.roundRect(nX - 28, cy2 - 70, 56, 140, 8); ctx.fill();
+    ctx.fillStyle = "#1d4ed8";
+    ctx.beginPath(); ctx.roundRect(sX - 28, cy2 - 70, 56, 140, 8); ctx.fill();
+    ctx.fillStyle = "white";
+    ctx.font = "700 18px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("N", nX - 8, cy2 + 6);
+    ctx.fillText("S", sX - 8, cy2 + 6);
+    if (state.showB) {
+      arrow(ctx, nX + 36, cy2 - 30, sX - 40, cy2 - 30, "#38bdf8", 2);
+      arrow(ctx, nX + 36, cy2 + 30, sX - 40, cy2 + 30, "#38bdf8", 2);
+    }
+    const halfW = 70 * Math.cos(state.angle);
+    const coilX = (nX + sX) / 2;
+    ctx.strokeStyle = Math.cos(state.angle) >= 0 ? "#f8fafc" : "#c4b5fd";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(coilX - Math.abs(halfW), cy2 - 48, Math.max(4, Math.abs(halfW) * 2), 96);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    const deg = ((state.angle * 180 / Math.PI) % 360 + 360) % 360;
+    ctx.fillText("มุมขดลวด θ = " + deg.toFixed(0) + "°", coilX - 50, cy2 + 68);
+    const bright = lampBright(ind.eps);
+    const lampX = Math.min(w * 0.86, w - 64);
+    lamp(ctx, lampX, cy2, bright);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(coilX, cy2 - 48);
+    ctx.lineTo(coilX, cy2 - 90);
+    ctx.lineTo(lampX, cy2 - 90);
+    ctx.lineTo(lampX, cy2 - 32);
+    ctx.moveTo(coilX, cy2 + 48);
+    ctx.lineTo(coilX, cy2 + 96);
+    ctx.lineTo(lampX, cy2 + 96);
+    ctx.lineTo(lampX, cy2 + 28);
+    ctx.stroke();
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("เครื่องกำเนิดไฟฟ้ากระแสสลับ · ขดหมุนในสนามสม่ำเสมอ", 16, 26);
+    ctx.fillText("A = 0.040 m² · ω = (ค่าสไลเดอร์ / 10) rad/s · ε = NBAω sinθ", 16, h - 16);
+  }
+}
+
+function lampBright(eps) {
+  if (state.sub5 === "dynamo") {
+    const omega = state.v / 10;
+    const emax = Math.abs(state.N * state.B * GEN_A * omega);
+    if (emax < 1e-12 || !state.playing) return 0;
+    return clamp(Math.abs(eps) / emax, 0, 1);
+  }
+  const a = COIL_A0;
+  const dgMax = 3 * 0.2862 / a;
+  const emax = Math.abs(state.N * state.v * state.B * COIL_A * Math.cos(rad(thetaDeg())) * dgMax);
+  if (emax < 1e-12 || !state.playing) return 0;
+  return clamp(Math.pow(Math.abs(eps) / emax, 0.4), 0, 1);
+}
+
+function drawSim() {
+  const { ctx, w, h } = fit(sim);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#070b12";
+  ctx.fillRect(0, 0, w, h);
+  if (state.mode === 1) drawMode1(ctx, w, h);
+  else if (state.mode === 2) drawMode2(ctx, w, h);
+  else if (state.mode === 3) drawMode3(ctx, w, h);
+  else if (state.mode === 4) drawMode4(ctx, w, h);
+  else drawMode5(ctx, w, h);
+  if (!state.playing) {
+    ctx.fillStyle = "rgba(15,23,42,0.8)";
+    ctx.beginPath();
+    ctx.roundRect(w - 118, 12, 102, 26, 8);
+    ctx.fill();
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "13px Leelawadee UI, Tahoma, sans-serif";
+    ctx.fillText("หยุดชั่วคราว", w - 108, 30);
+  }
+}
+
+function niceMax(v) {
+  if (!isFinite(v) || v <= 1e-14) return 1;
+  const exp = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / exp;
+  const f = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+  return f * exp;
+}
+
+function drawGraph() {
+  const { ctx, w, h } = fit(graph);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#070b12";
+  ctx.fillRect(0, 0, w, h);
+  const padL = 52, padR = 12, padT = 28, padB = 32;
+  const pw = w - padL - padR, ph = h - padT - padB;
+  let title = "", xlabel = "", ylabel = "";
+  let xs = [], ys = [], mx = null, my = null;
+  if (state.mode === 5) {
+    title = "ε เทียบกับเวลาขณะจำลองเดิน";
+    xlabel = "เวลา →";
+    ylabel = "ε (V)";
+    const data = state.hist.length ? state.hist : [0];
+    xs = data.map((_, i) => i);
+    ys = data.slice();
+    mx = data.length - 1;
+    my = data[data.length - 1];
+  } else if (state.mode === 1) {
+    title = "|B| ตามแนวแกนนอกแท่ง (หน่วยสัมพัทธ์)";
+    xlabel = "ตำแหน่งตามแนวแกน";
+    ylabel = "|B|";
+    for (let i = 0; i <= 60; i++) {
+      const x = 1.25 + i * (2.6 / 60);
+      const b1 = 1 / ((x + 1) * (x + 1));
+      const b2 = -1 / ((x - 1) * (x - 1));
+      xs.push(x); ys.push(Math.abs(b1 + b2) * state.B);
+    }
+  } else if (state.mode === 2 && state.sub2 === "wire") {
+    title = "B ของสายตรงเทียบกับระยะ r";
+    xlabel = "r (m)";
+    ylabel = "B (T)";
+    for (let i = 0; i <= 50; i++) {
+      const r = 0.02 + i * (0.28 / 50);
+      xs.push(r); ys.push(MU0 * state.I / (2 * Math.PI * r));
+    }
+    mx = 0.05; my = MU0 * state.I / (2 * Math.PI * 0.05);
+  } else if (state.mode === 2) {
+    title = "B เทียบกับกระแส I";
+    xlabel = "I (A)";
+    ylabel = "B (T)";
+    const k = state.sub2 === "loop" ? (state.N * MU0 / (2 * LOOP_R)) : (MU0 * state.N / SOL_L);
+    for (let i = 0; i <= 40; i++) {
+      const I = -10 + i * 0.5;
+      xs.push(I); ys.push(k * I);
+    }
+    mx = state.I; my = k * state.I;
+  } else if (state.mode === 3) {
+    title = "ขนาดแรง F เทียบกับอัตราเร็ว v";
+    xlabel = "v (m/s)";
+    ylabel = "F (N)";
+    const th = rad(thetaDeg());
+    const k = Math.abs(qC()) * state.B * Math.abs(Math.sin(th));
+    for (let i = 0; i <= 40; i++) {
+      const v = i * 2.5;
+      xs.push(v); ys.push(k * v);
+    }
+    mx = state.v; my = k * state.v;
+  } else if (state.sub4 === "single") {
+    title = "ขนาดแรง F เทียบกับ sinθ";
+    xlabel = "sinθ";
+    ylabel = "F (N)";
+    const k = Math.abs(state.I) * WIRE_L * state.B;
+    for (let i = 0; i <= 40; i++) {
+      const s = i / 40;
+      xs.push(s); ys.push(k * s);
+    }
+    mx = Math.abs(Math.sin(rad(thetaDeg())));
+    my = k * mx;
+  } else {
+    title = "ขนาดแรงระหว่างสาย เทียบกับระยะ d";
+    xlabel = "d (m)";
+    ylabel = "F (N)";
+    for (let i = 0; i <= 40; i++) {
+      const d = 0.05 + i * (0.35 / 40);
+      xs.push(d);
+      ys.push(MU0 * Math.abs(state.I * state.I2) * PAIR_L / (2 * Math.PI * d));
+    }
+    mx = state.d;
+    my = MU0 * Math.abs(state.I * state.I2) * PAIR_L / (2 * Math.PI * state.d);
+  }
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  let yAbs = 0;
+  ys.forEach((y) => { if (isFinite(y)) yAbs = Math.max(yAbs, Math.abs(y)); });
+  if (my !== null && isFinite(my)) yAbs = Math.max(yAbs, Math.abs(my));
+  const yMax = niceMax(yAbs);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "12px Leelawadee UI, Tahoma, sans-serif";
+  const hasNeg = ys.some((y) => isFinite(y) && y < -1e-12) || (my !== null && my < -1e-12);
+  const yPx = (y) => hasNeg ? padT + ph / 2 - (y / yMax) * (ph / 2) : padT + ph - (y / yMax) * ph;
+  ctx.fillText(title, padL, 16);
+  ctx.strokeStyle = "rgba(148,163,184,0.25)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(padL, padT, pw, ph);
+  if (hasNeg) {
+    ctx.beginPath();
+    ctx.moveTo(padL, yPx(0));
+    ctx.lineTo(padL + pw, yPx(0));
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "11px Leelawadee UI, Tahoma, sans-serif";
+  ctx.fillText(fmt(yMax), 4, padT + 8);
+  ctx.fillText("0", 4, hasNeg ? padT + ph / 2 + 4 : padT + ph);
+  if (hasNeg) ctx.fillText("−" + fmt(yMax), 4, padT + ph);
+  ctx.fillText(xlabel, padL + pw - ctx.measureText(xlabel).width, h - 8);
+  ctx.fillText(ylabel, 4, padT - 6);
+  ctx.beginPath();
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
+  let started = false;
+  for (let i = 0; i < xs.length; i++) {
+    if (!isFinite(ys[i])) continue;
+    const px = padL + (xs[i] - x0) / (x1 - x0 || 1) * pw;
+    const py = yPx(ys[i]);
+    if (!started) { ctx.moveTo(px, py); started = true; }
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  if (mx !== null && isFinite(my)) {
+    const px = padL + (mx - x0) / (x1 - x0 || 1) * pw;
+    const py = yPx(my);
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(clamp(px, padL, padL + pw), clamp(py, padT, padT + ph), 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function updateHUD() {
+  let F = null, R = null, eps = null, phi = null;
+  let eq = "", an = "", mis = "";
+  const vec = [];
+  const active = { F: false, R: false, E: false, P: false };
+  if (state.mode === 1) {
+    eq = "เส้นแรงเป็นเส้นปิด: ออกจาก N และเข้า S นอกแท่ง · ภายในแท่งชี้จาก S ไป N";
+    an = "ขั้วแม่เหล็กไม่ใช่ประจุไฟฟ้า จึงแยกขั้วเดี่ยวไม่ออก ความเข้ม B₀ ที่ตั้งไว้คือค่าอ้างอิงใกล้ขั้วสำหรับเปรียบเทียบความหนาแน่นของเส้นแรง";
+    mis = state.cut
+      ? "เมื่อตัดแท่งแม่เหล็ก แต่ละท่อนยังมีครบทั้งขั้ว N และขั้ว S รอยตัดที่หันเข้าหากันเป็นคนละขั้ว จึงดึงดูดกลับเข้าหากัน ไม่มีขั้วแม่เหล็กเดี่ยว"
+      : "ขั้ว N และขั้ว S ไม่ใช่ประจุบวกและประจุลบ เส้นแรงไม่วิ่งจากบวกไปลบแบบสนามไฟฟ้า และไม่มีแม่เหล็กขั้วเดียวในธรรมชาติ ลองกดตัดแท่งแม่เหล็กเพื่อตรวจ";
+    vec.push("แบบจำลองสองขั้วใช้วาดเส้นแรงเท่านั้น");
+    vec.push("Bx นอกแท่งชี้จากฝั่ง N ไปฝั่ง S");
+    vec.push("By = 0 บนแกนสมมาตร");
+    vec.push("Bz = 0 ในภาพระนาบนี้");
+  } else if (state.mode === 2) {
+    if (state.sub2 === "wire") {
+      const r = 0.05;
+      const B = fieldWire(state.I)(r);
+      eq = "B = μ₀ I / (2πr) = " + fmt(B) + " T ที่ r = 5.0 cm";
+      an = "นิ้วหัวแม่มือขวาชี้ตามกระแสสมมติ นิ้วที่กำรอบสายคือทิศสนาม สนามเป็นวงปิดและลดลงตาม 1/r";
+      vec.push("ที่ระยะ r = 0.050 m");
+      vec.push("|B| = " + fmt(Math.abs(B)) + " T");
+      vec.push("ทิศ B เป็นวงรอบสาย ไม่มีองค์ประกอบตามแนวสาย");
+      vec.push("Bx, By ในระนาบวง ขึ้นกับตำแหน่งรอบสาย");
+    } else if (state.sub2 === "loop") {
+      const B = fieldLoop();
+      const A = Math.PI * LOOP_R * LOOP_R;
+      phi = B * A;
+      eps = 0;
+      active.P = true; active.E = true;
+      eq = "B = N μ₀ I / (2R) = " + fmt(B) + " T · Φ_B หนึ่งรอบ = " + fmt(phi) + " Wb";
+      an = "กระแสวงทวนเข็มเมื่อ I > 0 ทำให้สนามที่ศูนย์กลางออกจากหน้าจอ กระแสคงที่จึงได้ฟลักซ์คงที่ และ ε = 0";
+      vec.push("B ที่ศูนย์กลางชี้ตั้งฉากกับระนาบห่วง");
+      vec.push(state.I >= 0 ? "Bz > 0 (ออกจากหน้าจอ)" : "Bz < 0 (เข้าหน้าจอ)");
+      vec.push("Bx = 0 , By = 0 ที่จุดศูนย์กลาง");
+      vec.push("|B| = " + fmt(Math.abs(B)) + " T");
+    } else {
+      const B = fieldSol();
+      const A = Math.PI * SOL_R * SOL_R;
+      phi = B * A;
+      eps = 0;
+      active.P = true; active.E = true;
+      eq = "B = μ₀ (N/L) I = " + fmt(B) + " T · Φ_B หนึ่งรอบ = B A = " + fmt(phi) + " Wb";
+      an = "กำนิ้วขวาตามกระแสที่ขด นิ้วโป้งชี้ทิศสนามภายในโซเลนอยด์ กระแสคงที่ทำให้ฟลักซ์ไม่เปลี่ยน จึงไม่มีแรงเคลื่อนไฟฟ้าเหนี่ยวนำ";
+      vec.push("ภายในโซเลนอยด์อุดมคติ");
+      vec.push(state.I >= 0 ? "Bx > 0 (ไปทางขวา)" : "Bx < 0 (ไปทางซ้าย)");
+      vec.push("By ≈ 0 , Bz ≈ 0");
+      vec.push("|B| = " + fmt(Math.abs(B)) + " T");
+    }
+    if (Math.abs(state.I) < 1e-9) mis = "ขณะนี้กระแสเป็นศูนย์ จึงไม่มีสนามแม่เหล็กรอบตัวนำ กระแสคือแหล่งของสนามในโหมดนี้";
+    else if (state.electron) mis = "จุดที่เห็นคือทิศการเคลื่อนที่ของอิเล็กตรอน ซึ่งสวนทางกระแสสมมติ กฎมือขวาต้องใช้ทิศจากขั้วบวกไปขั้วลบเสมอ";
+    else mis = "สนามนี้เกิดจากประจุที่กำลังเคลื่อนที่ในสาย ไม่ใช่จากขั้วแม่เหล็กถาวร และกระแสคงที่อย่างเดียวไม่ทำให้เกิดแรงเคลื่อนไฟฟ้าเหนี่ยวนำ เพราะฟลักซ์ไม่เปลี่ยนตามเวลา";
+  } else if (state.mode === 3) {
+    const Lz = lorentz();
+    F = Lz.Fslider;
+    R = Lz.R;
+    active.F = true; active.R = true;
+    const th = rad(thetaDeg());
+    eq = "F = |q| v B sinθ = " + fmt(F) + " N    R = m v⊥ / (|q| B) = " + (isFinite(R) ? fmt(R) + " m" : "ไม่โค้ง");
+    const K = 0.5 * MASS * Lz.speed * Lz.speed;
+    an = "กฎมือขวา: นิ้วชี้ตาม v นิ้วกลางตาม B นิ้วโป้งคือ F ของประจุบวก ประจุลบได้แรงสวนทาง ขณะนี้เส้นทางเป็นแนวที่แรงตั้งฉากกับ v จึงได้ |v| = " + fmt(Lz.speed) + " m/s และ K = " + fmt(K) + " J";
+    vec.push("v = (" + fmt(state.p.vx) + ", " + fmt(state.p.vy) + ", " + fmt(state.p.vz) + ") m/s");
+    vec.push("B = (0, 0, " + fmt(state.B) + ") T");
+    vec.push("F = (" + fmt(Lz.Fx) + ", " + fmt(Lz.Fy) + ", " + fmt(Lz.Fz) + ") N");
+    vec.push("|v| = " + fmt(Lz.speed) + " m/s · Fz = 0 เพราะ F ตั้งฉากกับ B");
+    if (Math.abs(state.q) < 1e-9) mis = "ไม่มีประจุ จึงไม่มีแรงแม่เหล็ก อนุภาคเคลื่อนที่ตรงด้วยความเร็วคงที่";
+    else if (state.v < 1e-9) mis = "ประจุหยุดนิ่งจะไม่ถูกแรงแม่เหล็กกระทำ แรงนี้เกิดกับประจุที่กำลังเคลื่อนที่เท่านั้น ลองเพิ่มความเร็ว v";
+    else if (state.B < 1e-9) mis = "ไม่มีสนามแม่เหล็ก แรงจึงเป็นศูนย์ ประจุเคลื่อนที่เป็นเส้นตรง";
+    else if (Math.abs(Math.sin(th)) < 1e-3) mis = "ความเร็วขนานกับสนาม sinθ = 0 แรงเป็นศูนย์ ประจุไม่เลี้ยว";
+    else mis = "แรงแม่เหล็กตั้งฉากกับความเร็วตลอดเวลา จึงไม่ทำงานและไม่เพิ่มอัตราเร็วหรือพลังงานจลน์ มันเปลี่ยนเฉพาะทิศทางการเคลื่อนที่";
+  } else if (state.mode === 4 && state.sub4 === "single") {
+    const w1 = wireSingle();
+    F = w1.F;
+    active.F = true;
+    eq = "F = I L B sinθ = " + fmt(F) + " N   โดย L = 0.80 m";
+    an = "ทิศแรงใช้กฎมือขวาของผลคูณไขว้ I ชี้ตามกระแสสมมติ L คือเวกเตอร์ตามสาย นิ้วชี้ตาม L นิ้วกลางตาม B นิ้วโป้งคือ F เมื่อ I เป็นลบ แรงสวนทาง";
+    vec.push("B = (" + fmt(w1.Bx) + ", 0, 0) T");
+    vec.push("L = (" + fmt(w1.Lx) + ", " + fmt(w1.Ly) + ", 0) m");
+    vec.push("F = (0, 0, " + fmt(w1.Fz) + ") N");
+    vec.push(w1.Fz < -1e-9 ? "Fz < 0 หมายถึงพุ่งเข้าหน้าจอ" : w1.Fz > 1e-9 ? "Fz > 0 หมายถึงพุ่งออกจากหน้าจอ" : "ไม่มีองค์ประกอบของแรง");
+    if (Math.abs(state.I) < 1e-9) mis = "สายที่ไม่มีกระแสจะไม่ถูกแรงแม่เหล็ก แม้จะอยู่ในสนามที่แรงมาก";
+    else if (Math.abs(Math.sin(rad(thetaDeg()))) < 1e-3) mis = "เมื่อกระแสขนานหรือสวนทางกับสนาม sinθ = 0 แรงบนสายเป็นศูนย์";
+    else if (state.electron) mis = "ถ้าดูทิศอิเล็กตรอน อย่าเอามือขวาจับตามอิเล็กตรอน กฎมือขวาใช้กระแสสมมติจากบวกไปลบ";
+    else mis = "แรงบนสายมีทิศตั้งฉากกับทั้งกระแสและสนาม มันไม่ดึงสายไปตามเส้นแรง";
+  } else if (state.mode === 4) {
+    const pair = wirePair();
+    F = pair.F;
+    active.F = true;
+    eq = "F/L = μ₀ I₁ I₂ / (2πd)  →  F = " + fmt(pair.F) + " N บนความยาว 1.00 m";
+    an = pair.attract
+      ? "กระแสทิศเดียวกันดึงดูดกัน เพราะสนามของสายหนึ่งที่ตำแหน่งอีกสายหนึ่งทำให้แรงชี้เข้าหากัน"
+      : "กระแสสวนทางกันผลักกัน ขนาดแรงแปรผันตรงกับ I₁ และ I₂ และแปรผกผันกับระยะห่าง d";
+    if (state.I * state.I2 === 0) an = "ถ้าสายใดสายหนึ่งไม่มีกระแส แรงระหว่างสายเป็นศูนย์";
+    vec.push("F บนสายที่ 2 = (" + fmt(pair.Fx) + ", 0, 0) N");
+    vec.push("Fy = 0 , Fz = 0");
+    vec.push("F/L = " + fmt(pair.perLen) + " N/m");
+    vec.push("d = " + state.d.toFixed(2) + " m");
+    mis = state.I * state.I2 === 0
+      ? "แรงระหว่างสายเกิดเมื่อทั้งสองเส้นมีกระแส สายเปล่าไม่ดึงและไม่ผลักอีกเส้น"
+      : (pair.attract
+        ? "กระแสทิศเดียวกันดึงดูด ไม่ใช่ผลัก อย่าเอาพฤติกรรมของประจุไฟฟ้าชนิดเดียวกันมาใช้กับสายไฟ"
+        : "กระแสสวนทางกันจะผลักกัน เครื่องหมายของกระแสบอกทิศสมมติจากบวกไปลบ");
+  } else {
+    const ind = induction();
+    eps = ind.eps;
+    phi = ind.phi;
+    active.E = true; active.P = true;
+    if (ind.kind === "dynamo") {
+      eq = "ε = N B A ω sinθ = " + fmt(eps) + " V · Φ_B = B A cosθ = " + fmt(phi) + " Wb";
+      an = state.playing
+        ? "ขดลวดหมุนด้วย ω = " + fmt(ind.omegaSet) + " rad/s ทำให้มุมระหว่างเส้นตั้งฉากของพื้นที่กับ B เปลี่ยนตลอดเวลา จึงได้แรงเคลื่อนสลับ"
+        : "ขณะหยุดชั่วคราวขดลวดไม่หมุน dθ/dt = 0 แม้จะค้างอยู่ที่มุมที่เคยให้ ε สูง แรงเคลื่อนไฟฟ้าก็เป็นศูนย์";
+    } else {
+      eq = "ε = −N dΦ_B/dt = " + fmt(eps) + " V · Φ_B = " + fmt(phi) + " Wb";
+      an = "Φ_B = B A cosθ [a²/(a²+x²)]^(3/2) โดย A = 0.010 m² เครื่องหมายลบคือกฎของเลนซ์: กระแสเหนี่ยวนำสร้างสนามต้านการเปลี่ยนแปลงของฟลักซ์";
+    }
+    vec.push("Φ_B = " + fmt(phi) + " Wb");
+    vec.push("ε = " + fmt(eps) + " V");
+    vec.push("N = " + state.N + " รอบ");
+    if (ind.kind === "dynamo") {
+      vec.push("ω ที่ใช้จริง = " + fmt(state.playing ? ind.omegaSet : 0) + " rad/s");
+      vec.push("แกนพื้นที่ขดอยู่ในระนาบการหมุน");
+    } else {
+      vec.push("x ของแท่ง = " + fmt(state.magnetX) + " m");
+      vec.push("v จริงที่ใช้คำนวณ = " + fmt(state.playing ? state.magnetDir * state.v : 0) + " m/s");
+    }
+    if (!state.playing || state.v < 1e-9) {
+      mis = "การมีสนามแม่เหล็กอย่างเดียวไม่ทำให้เกิดกระแสเหนี่ยวนำ ต้องมีการเปลี่ยนแปลงฟลักซ์ผ่านเวลา ตอนนี้แหล่งกำเนิดหยุดนิ่งจึงได้ ε = 0";
+    } else if (ind.kind === "magnet" && Math.abs(Math.cos(rad(thetaDeg()))) < 0.02) {
+      mis = "θ = 90° ทำให้เส้นแรงขนานกับระนาบขดลวด ฟลักซ์เป็นศูนย์ตลอดการเคลื่อนที่ จึงไม่มีแรงเคลื่อนไฟฟ้าเหนี่ยวนำ";
+    } else if (ind.kind === "magnet" && Math.abs(state.magnetX) < 0.02) {
+      mis = "ขณะแม่เหล็กอยู่กลางขด ฟลักซ์มีค่าสูงสุด แต่ขณะนั้นอัตราการเปลี่ยนแปลงเป็นศูนย์ หลอดไฟจึงดับชั่วขณะ ทั้งที่สนามผ่านขดอยู่มาก";
+    } else {
+      mis = "แรงเคลื่อนไฟฟ้าเหนี่ยวนำขึ้นกับอัตราการเปลี่ยนฟลักซ์ ไม่ได้ขึ้นกับความมากของฟลักซ์อย่างเดียว กฎของเลนซ์บอกว่ากระแสที่เกิดขึ้นจะต้านสาเหตุที่ทำให้ฟลักซ์เปลี่ยน";
+    }
+  }
+  $("outF").textContent = F === null ? "—" : fmtUnit(F, "N");
+  $("outR").textContent = R === null ? "—" : (isFinite(R) ? fmtUnit(R, "m") : "ไม่โค้ง");
+  $("outE").textContent = eps === null ? "—" : fmtUnit(eps, "V");
+  $("outP").textContent = phi === null ? "—" : fmtUnit(phi, "Wb");
+  $("cardF").classList.toggle("active", active.F);
+  $("cardR").classList.toggle("active", active.R);
+  $("cardE").classList.toggle("active", active.E);
+  $("cardP").classList.toggle("active", active.P);
+  $("eqText").textContent = eq;
+  $("anText").textContent = an;
+  $("misText").textContent = mis;
+  $("vecBox").textContent = vec.join("\n");
+}
+
+function bind() {
+  document.querySelectorAll(".mode-btn").forEach((b) => {
+    b.addEventListener("click", () => setMode(Number(b.dataset.mode)));
+  });
+  const map = [
+    ["inB", "B", false],
+    ["inI", "I", false],
+    ["inI2", "I2", false],
+    ["ind", "d", false],
+    ["inq", "q", true],
+    ["inv", "v", true],
+    ["inth", "th", true],
+    ["inN", "N", false]
+  ];
+  map.forEach(([id, key, particle]) => {
+    $(id).addEventListener("input", () => {
+      const value = Number($(id).value);
+      if (key === "th") {
+        if (state.mode === 5) state.thFlux = value;
+        else state.thForce = value;
+      } else state[key] = value;
+      if (particle && state.mode === 3) initParticle();
+      syncControls();
+    });
+  });
+  $("togB").addEventListener("change", () => { state.showB = $("togB").checked; });
+  $("togF").addEventListener("change", () => { state.showF = $("togF").checked; });
+  $("togE").addEventListener("change", () => { state.electron = $("togE").checked; syncControls(); });
+  $("btnPlay").addEventListener("click", () => {
+    state.playing = !state.playing;
+    if (state.mode === 5) state.hist.push(induction().eps);
+    syncControls();
+  });
+  $("btnReset").addEventListener("click", resetMotion);
+  $("btnStep").addEventListener("click", () => {
+    state.playing = false;
+    step(1 / 60);
+    syncControls();
+  });
+  $("btnCut").addEventListener("click", () => {
+    state.cut = !state.cut;
+    state.lineKey = "";
+    syncControls();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea")) return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      state.playing = !state.playing;
+      syncControls();
+    } else if (e.key === "r" || e.key === "R") resetMotion();
+    else if (e.key >= "1" && e.key <= "5") setMode(Number(e.key));
+  });
+  window.addEventListener("resize", () => { state.lineKey = ""; state.needleKey = ""; });
+}
+
+let last = 0;
+function frame(now) {
+  if (!last) last = now;
+  let dt = (now - last) / 1000;
+  last = now;
+  if (dt > 0.05) dt = 0.05;
+  if (state.playing) step(dt);
+  drawSim();
+  drawGraph();
+  updateHUD();
+  requestAnimationFrame(frame);
+}
+
+initParticle();
+bind();
+syncControls();
+requestAnimationFrame(frame);
+
+window.__snapshot = function () {
+  const Lz = lorentz();
+  const w1 = wireSingle();
+  const pair = wirePair();
+  const ind = induction();
+  return {
+    mode: state.mode,
+    sub2: state.sub2,
+    sub4: state.sub4,
+    sub5: state.sub5,
+    Fcharge: Lz.Fslider,
+    R: Lz.R,
+    speed: Lz.speed,
+    Fwire: w1.F,
+    Fz: w1.Fz,
+    Fpair: pair.F,
+    attract: pair.attract,
+    Bwire: fieldWire(state.I)(0.05),
+    Bloop: fieldLoop(),
+    Bsol: fieldSol(),
+    eps: ind.eps,
+    phi: ind.phi
+  };
+};
+</script>
+</body>
+</html>
